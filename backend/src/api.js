@@ -34,15 +34,15 @@ app.get('/', async (req, res) => {
 });
 
 app.post('/', async (req, res) => {
-  const { text } = req.body;
+  const { todoText, dueDate } = req.body;
 
-  if (typeof text !== 'string') {
+  if (typeof todoText !== 'string') {
     res.status(400);
     res.json({ message: "invalid 'text' expected string" });
     return;
   }
 
-  const todo = { id: generateId(), text, completed: false };
+  const todo = { id: generateId(), text: todoText , completed: false, due_date: dueDate };
   await database.client.db('todos').collection('todos').insertOne(todo);
   res.status(201);
   res.json(todo);
@@ -51,16 +51,15 @@ app.post('/', async (req, res) => {
 app.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { completed } = req.body;
-
   if (typeof completed !== 'boolean') {
     res.status(400);
     res.json({ message: "invalid 'completed' expected boolean" });
     return;
   }
 
-  await database.client.db('todos').collection('todo').updateOne(
+  await database.client.db('todos').collection('todos').updateOne(
     { id },
-    { $set: { completed } },
+    { $set: { completed: completed } },
   );
   res.status(200);
   res.end();
