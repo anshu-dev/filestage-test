@@ -5,12 +5,12 @@ import { useStyles } from "../styles";
 
 function AddTodo({ todos, setTodos }) {
   const classes = useStyles();
-  const todayDate = new Date().toLocaleDateString("en-US");
   const [newTodoText, setNewTodoText] = useState("");
-  const [dueDate, setDueDate] = useState(formatDate(todayDate));
+  const [dueDate, setDueDate] = useState(formatDate());
 
-  function addTodo(text) {
-    const todoText = text.trim();
+  function addTodo(e) {
+    e.preventDefault();
+    const todoText = newTodoText.trim();
     if (todoText !== "") {
       fetchAddTodo(todoText, dueDate)
         .then((response) => response.json())
@@ -27,7 +27,7 @@ function AddTodo({ todos, setTodos }) {
         display="flex"
         flexDirection="row"
         component="form"
-        onSubmit={() => addTodo(newTodoText)}
+        onSubmit={(e) => addTodo(e)}
       >
         <Box flexGrow={1}>
           <TextField
@@ -35,11 +35,6 @@ function AddTodo({ todos, setTodos }) {
             required
             fullWidth
             value={newTodoText}
-            onKeyPress={(event) => {
-              if (event.key === "Enter") {
-                addTodo(newTodoText);
-              }
-            }}
             onChange={(event) => setNewTodoText(event.target.value)}
           />
         </Box>
@@ -48,7 +43,7 @@ function AddTodo({ todos, setTodos }) {
           required
           className={classes.inputDate}
           type="date"
-          inputProps={{ min: formatDate(todayDate), max: 10 }}
+          inputProps={{ min: formatDate() }}
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
         />

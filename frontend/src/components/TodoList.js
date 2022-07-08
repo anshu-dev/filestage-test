@@ -16,7 +16,7 @@ import {
 import { useStyles } from "../styles";
 import { fetchDeleteTodo, fetchToggleTodoCompleted } from "../utils";
 
-function Todolist({ todos, setTodos }) {
+function Todolist({ show, todos, setTodos }) {
   const classes = useStyles();
   const dragItem = useRef();
   const dragOverItem = useRef();
@@ -61,6 +61,9 @@ function Todolist({ todos, setTodos }) {
       <Box display="flex" flexDirection="column" alignItems="stretch">
         <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
           <TableHead>
+            <Typography variant="h5" align="left" component="div" gutterBottom>
+              {show ? "All Todos" : "Filtered By Due Today"}
+            </Typography>
             <TableRow>
               <TableCell>Completed</TableCell>
               <TableCell>Text</TableCell>
@@ -69,51 +72,53 @@ function Todolist({ todos, setTodos }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {todos.map(({ id, text, completed, due_date }, index) => (
-              <TableRow
-                key={id}
-                className={classes.todoContainer}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                onDragStart={(e) => dragStart(e, index)}
-                onDragEnter={(e) => dragEnter(e, index)}
-                onDragEnd={drop}
-                draggable
-              >
-                <TableCell>
-                  <Checkbox
-                    checked={completed}
-                    onClick={() => toggleTodoCompleted(id)}
-                  ></Checkbox>
-                </TableCell>
+            {[...todos]
+              .reverse()
+              .map(({ id, text, completed, due_date }, index) => (
+                <TableRow
+                  key={id}
+                  className={classes.todoContainer}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  onDragStart={(e) => dragStart(e, index)}
+                  onDragEnter={(e) => dragEnter(e, index)}
+                  onDragEnd={drop}
+                  draggable
+                >
+                  <TableCell>
+                    <Checkbox
+                      checked={completed}
+                      onClick={() => toggleTodoCompleted(id)}
+                    ></Checkbox>
+                  </TableCell>
 
-                <TableCell>
-                  <Box flexGrow={1}>
-                    <Typography
-                      className={completed ? classes.todoTextCompleted : ""}
-                      variant="body1"
+                  <TableCell>
+                    <Box flexGrow={1}>
+                      <Typography
+                        className={completed ? classes.todoTextCompleted : ""}
+                        variant="body1"
+                      >
+                        {text}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+
+                  <TableCell>
+                    <Box flexGrow={1}>
+                      <Typography>{due_date}</Typography>
+                    </Box>
+                  </TableCell>
+
+                  <TableCell>
+                    <Button
+                      className={classes.deleteTodo}
+                      startIcon={<Icon>delete</Icon>}
+                      onClick={() => deleteTodo(id)}
                     >
-                      {text}
-                    </Typography>
-                  </Box>
-                </TableCell>
-
-                <TableCell>
-                  <Box flexGrow={1}>
-                    <Typography>{due_date}</Typography>
-                  </Box>
-                </TableCell>
-
-                <TableCell>
-                  <Button
-                    className={classes.deleteTodo}
-                    startIcon={<Icon>delete</Icon>}
-                    onClick={() => deleteTodo(id)}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </Box>

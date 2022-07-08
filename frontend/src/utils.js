@@ -1,7 +1,7 @@
 const url = "http://localhost:3001";
 
-export const fetchGetTodos = (todayDate) => {
-  return fetch(`${url}?today_date=${todayDate}&`);
+export const fetchGetTodos = (query) => {
+  return fetch(`${url}${query ? query : ""}`);
 };
 
 export const fetchAddTodo = (text, dueDate) => {
@@ -31,8 +31,8 @@ export const fetchDeleteTodo = (id) => {
   });
 };
 
-export const formatDate = (date) => {
-  var d = new Date(date),
+export const formatDate = () => {
+  var d = new Date(),
     month = "" + (d.getMonth() + 1),
     day = "" + d.getDate(),
     year = d.getFullYear();
