@@ -1,7 +1,5 @@
 const express = require('express');
-const { v4: generateId } = require('uuid');
-const database = require('./database');
-
+const controller = require("./controllers.js");
 const app = express();
 
 function requestLogger(req, res, next) {
@@ -22,54 +20,13 @@ function requestLogger(req, res, next) {
 
 app.use(requestLogger);
 app.use(require('cors')());
-
+app.use
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.get('/', async (req, res) => {
-  const todos = database.client.db('todos').collection('todos');
-  const response = await todos.find({}).toArray();
-  res.status(200);
-  res.json(response);
-});
-
-app.post('/', async (req, res) => {
-  const { todoText, dueDate } = req.body;
-
-  if (typeof todoText !== 'string') {
-    res.status(400);
-    res.json({ message: "invalid 'text' expected string" });
-    return;
-  }
-
-  const todo = { id: generateId(), text: todoText , completed: false, due_date: dueDate };
-  await database.client.db('todos').collection('todos').insertOne(todo);
-  res.status(201);
-  res.json(todo);
-});
-
-app.put('/:id', async (req, res) => {
-  const { id } = req.params;
-  const { completed } = req.body;
-  if (typeof completed !== 'boolean') {
-    res.status(400);
-    res.json({ message: "invalid 'completed' expected boolean" });
-    return;
-  }
-
-  await database.client.db('todos').collection('todos').updateOne(
-    { id },
-    { $set: { completed: completed } },
-  );
-  res.status(200);
-  res.end();
-});
-
-app.delete('/:id', async (req, res) => {
-  const { id } = req.params;
-  await database.client.db('todos').collection('todos').deleteOne({ id });
-  res.status(203);
-  res.end();
-});
+app.get('/', controller.getTodos);
+app.post('/',controller.addTodo);
+app.put('/:id', controller.updateTodo);
+app.delete('/:id', controller.deleteTodo);
 
 module.exports = app;
