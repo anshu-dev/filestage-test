@@ -10,7 +10,7 @@ exports.getTodos = async (req, res) => {
     if (today_date) filter = { ...filter, due_date: today_date };
     const response = await todos.find(filter, { limit: 20, skip: skip ? +skip : 0 }).toArray();
     res.status(200);
-    res.json(response);
+    res.json(response.reverse());
   } catch (error) {
     logger.error("while feching todos");
     res.status(500).send(error);
@@ -28,7 +28,7 @@ exports.addTodo = async (req, res) => {
     }
     if (new Date(dueDate) < new Date(today_date)) {
       res.status(400);
-      res.error({ message: "invalid 'date' expected current or future date" });
+      res.error({ message: "invalid 'date'" });
       return;
     }
     const todo = {

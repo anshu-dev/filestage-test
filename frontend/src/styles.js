@@ -2,9 +2,10 @@ import makeStyles from "@mui/styles/makeStyles";
 
 export const useStyles = makeStyles({
   addTodoContainer: { padding: 10 },
+  loader: { width: "20%", margin: "auto" },
   inputDate: { marginLeft: 10, marginRight: 10 },
   addTodoButton: { marginLeft: 5 },
-  todosContainer: { marginTop: 10, padding: 10 },
+  todosContainer: { marginTop: 10, padding: 10, marginBlockEnd: 20 },
   todosBox: { marginTop: 10, padding: 10 },
   todoContainer: {
     borderTop: "1px solid #bfbfbf",
@@ -36,8 +37,5 @@ export const useStyles = makeStyles({
     color: "white",
     backgroundColor: "black",
     width: 1000,
-  },
-  deleteTodo: {
-    visibility: "hidden",
   },
 });

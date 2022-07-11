@@ -1,21 +1,36 @@
 import React, { useState } from "react";
 import { Button, Icon, Paper, Box, TextField } from "@mui/material";
+import toast from "react-hot-toast";
+
 import { fetchAddTodo, formatDate } from "../utils";
 import { useStyles } from "../styles";
 
-function AddTodo({ todos, setTodos }) {
+const AddTodo = ({ todos, setTodos }) => {
   const classes = useStyles();
+  const todaysDate = formatDate();
   const [newTodoText, setNewTodoText] = useState("");
-  const [dueDate, setDueDate] = useState(formatDate());
+  const [dueDate, setDueDate] = useState(todaysDate);
 
   function addTodo(e) {
     e.preventDefault();
     const todoText = newTodoText.trim();
     if (todoText !== "") {
       fetchAddTodo(todoText, dueDate)
-        .then((response) => response.json())
-        .then((todo) => setTodos([...todos, todo]));
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error("something went wrong");
+        })
+        .then((todo) => {
+          setTodos([todo, ...todos]);
+          toast.success("added successfully");
+        })
+        .catch((error) => {
+          toast.error(error.message);
+        });
       setNewTodoText("");
+      setDueDate(todaysDate);
     } else {
       alert("canot be empty");
     }
@@ -43,7 +58,7 @@ function AddTodo({ todos, setTodos }) {
             label="DueDate"
             required
             type="date"
-            // inputProps={{ min: formatDate() }}
+            inputProps={{ min: todaysDate }}
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />
@@ -58,6 +73,6 @@ function AddTodo({ todos, setTodos }) {
       </Box>
     </Paper>
   );
-}
+};
 
 export default AddTodo;

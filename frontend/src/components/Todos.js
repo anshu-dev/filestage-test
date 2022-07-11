@@ -1,27 +1,40 @@
 import { useState, useEffect } from "react";
-import { Button, Container, Icon, Typography } from "@mui/material";
+import { Container, Icon, Switch, Typography } from "@mui/material";
+import toast from "react-hot-toast";
 
 import { fetchGetTodos, formatDate } from "../utils";
-import { useStyles } from "../styles";
 import AddTodo from "./AddTodo";
 import TodoList from "./TodoList";
 import InfinitScroll from "react-infinite-scroll-component";
+import Loader from "./Loader";
 
-function Todos() {
-  const classes = useStyles();
+const Todos = () => {
   const [todos, setTodos] = useState([]);
   const [show, setShow] = useState(false);
   const [skip, setSkip] = useState(0);
   const [scrollLoder, setscrollLoder] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     let query;
     if (show) query = `?today_date=${formatDate()}`;
     fetchGetTodos(query)
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error("something went wrong");
+      })
       .then((todos) => {
         setscrollLoder(false);
         setTodos(todos);
+        toast.success("success");
+        setLoading(false);
+      })
+      .catch((error) => {
+        toast.error(error);
+        setLoading(false);
       });
   }, [setTodos, show]);
 
@@ -45,29 +58,38 @@ function Todos() {
       next={fetchNextTodos}
       hasMore={true}
       style={{ textAlign: "center" }}
-      loader={scrollLoder && <div>Loading ... </div>}
+      loader={
+        scrollLoder && (
+          <div>
+            <Loader />
+          </div>
+        )
+      }
     >
       <Container maxWidth="md" id="container">
         <Typography variant="h3" align="center" component="h1" gutterBottom>
           Todos
         </Typography>
+
         <AddTodo todos={todos} setTodos={setTodos} id="addtodo" />
-        <Typography variant="h3" align="right" component="h1" gutterBottom>
-          <Button
-            type="button"
-            className={classes.addTodoButton}
-            startIcon={<Icon>filter</Icon>}
-            onClick={() => setShow(!show)}
-          >
-            {!show ? "Filter by due today" : "All Todos"}
-          </Button>
+
+        <Typography align="right" component="" gutterBottom>
+          <label>All Todos</label>
+          <Switch checked={show} onChange={() => setShow(!show)} />
+          <label>Due Today</label>
         </Typography>
+
         {todos.length > 0 && (
-          <TodoList show={show} todos={todos} setTodos={setTodos} />
+          <TodoList
+            show={show}
+            todos={todos}
+            setTodos={setTodos}
+            loading={loading}
+          />
         )}
       </Container>
     </InfinitScroll>
   );
-}
+};
 
 export default Todos;

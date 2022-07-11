@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import {
   Typography,
   Button,
@@ -13,119 +13,142 @@ import {
   TableCell,
   TableBody,
 } from "@mui/material";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import toast from "react-hot-toast";
+
 import { useStyles } from "../styles";
 import { fetchDeleteTodo, fetchToggleTodoCompleted } from "../utils";
+import Loader from "./Loader";
 
-function Todolist({ show, todos, setTodos }) {
+const Todolist = ({ show, todos, setTodos, loading }) => {
   const classes = useStyles();
-  const dragItem = useRef();
-  const dragOverItem = useRef();
-
-  const dragStart = (e, position) => {
-    dragItem.current = position;
-  };
-
-  const dragEnter = (e, position) => {
-    dragOverItem.current = position;
-  };
-
-  const drop = (e) => {
-    const copyListItems = [...todos];
-    const dragItemContent = copyListItems[dragItem.current];
-    copyListItems.splice(dragItem.current, 1);
-    copyListItems.splice(dragOverItem.current, 0, dragItemContent);
-    dragItem.current = null;
-    dragOverItem.current = null;
-    setTodos(copyListItems);
-  };
 
   function toggleTodoCompleted(id) {
-    fetchToggleTodoCompleted(id, todos).then(() => {
-      const newTodos = [...todos];
-      const modifiedTodoIndex = newTodos.findIndex((todo) => todo.id === id);
-      newTodos[modifiedTodoIndex] = {
-        ...newTodos[modifiedTodoIndex],
-        completed: !newTodos[modifiedTodoIndex].completed,
-      };
-      setTodos(newTodos);
-    });
+    fetchToggleTodoCompleted(id, todos)
+      .then(() => {
+        const newTodos = [...todos];
+        const modifiedTodoIndex = newTodos.findIndex((todo) => todo.id === id);
+        newTodos[modifiedTodoIndex] = {
+          ...newTodos[modifiedTodoIndex],
+          completed: !newTodos[modifiedTodoIndex].completed,
+        };
+        setTodos(newTodos);
+        toast.success("updated");
+      })
+      .catch((error) => toast(error));
   }
 
   function deleteTodo(id) {
-    fetchDeleteTodo(id).then(() =>
-      setTodos(todos.filter((todo) => todo.id !== id))
+    fetchDeleteTodo(id)
+      .then(() => {
+        setTodos(todos.filter((todo) => todo.id !== id));
+        toast.success("deleted successfully");
+      })
+      .catch((error) => toast.error(error));
+  }
+
+  const handleEnd = (result) => {
+    if (!result.destination) return;
+    const newTodos = [...todos];
+    const [reorderedItem] = newTodos.splice(result.source.index, 1);
+    newTodos.splice(result.destination.index, 0, reorderedItem);
+    setTodos(newTodos);
+  };
+  if (loading) {
+    return <Loader />;
+  } else {
+    return (
+      <TableContainer component={Paper} className={classes.todosContainer}>
+        <Box display="flex" flexDirection="column" alignItems="stretch">
+          <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
+            <TableHead>
+              <TableRow>
+                <TableCell size="medium" align="center" colSpan={12}>
+                  {!show ? "All Todos" : "Filtered By Due Today"}
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableHead className={classes.root}>
+              <TableRow>
+                <TableCell>Completed</TableCell>
+                <TableCell>Text</TableCell>
+                <TableCell>Due Date</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <DragDropContext onDragEnd={handleEnd}>
+              <Droppable droppableId="to-dos">
+                {(provided) => (
+                  <TableBody
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    {todos.map(({ id, text, completed, due_date }, index) => (
+                      <Draggable
+                        key={id}
+                        draggableId={id?.toString()}
+                        index={index}
+                      >
+                        {(provided, snapshot) => (
+                          <TableRow
+                            key={id}
+                            className={classes.todoContainer}
+                            sx={{
+                              "&:last-child td, &:last-child th": { border: 0 },
+                            }}
+                            {...provided.draggableProps}
+                            ref={provided.innerRef}
+                            {...provided.dragHandleProps}
+                          >
+                            <TableCell>
+                              <Checkbox
+                                checked={completed}
+                                onClick={() => toggleTodoCompleted(id)}
+                              ></Checkbox>
+                            </TableCell>
+
+                            <TableCell>
+                              <Box flexGrow={1}>
+                                <Typography
+                                  className={
+                                    completed ? classes.todoTextCompleted : ""
+                                  }
+                                  variant="body1"
+                                >
+                                  {text}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+
+                            <TableCell>
+                              <Box flexGrow={1}>
+                                <Typography>{due_date}</Typography>
+                              </Box>
+                            </TableCell>
+
+                            <TableCell>
+                              <Button
+                                className={classes.deleteTodo}
+                                startIcon={<Icon>delete</Icon>}
+                                onClick={() => deleteTodo(id)}
+                              >
+                                Delete
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </TableBody>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </Table>
+        </Box>
+      </TableContainer>
     );
   }
-  return (
-    <TableContainer component={Paper} className={classes.todosContainer}>
-      <Box display="flex" flexDirection="column" alignItems="stretch">
-        <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-          <TableHead>
-            <Typography variant="h5" align="left" component="div" gutterBottom>
-              {show ? "All Todos" : "Filtered By Due Today"}
-            </Typography>
-          </TableHead>
-          <TableHead className={classes.root}>
-            <TableRow>
-              <TableCell>Completed</TableCell>
-              <TableCell>Text</TableCell>
-              <TableCell>Due Date</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {[...todos]
-              .reverse()
-              .map(({ id, text, completed, due_date }, index) => (
-                <TableRow
-                  key={index}
-                  className={classes.todoContainer}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                  onDragStart={(e) => dragStart(e, index)}
-                  onDragEnter={(e) => dragEnter(e, index)}
-                  onDragEnd={drop}
-                  draggable
-                >
-                  <TableCell>
-                    <Checkbox
-                      checked={completed}
-                      onClick={() => toggleTodoCompleted(id)}
-                    ></Checkbox>
-                  </TableCell>
-
-                  <TableCell>
-                    <Box flexGrow={1}>
-                      <Typography
-                        className={completed ? classes.todoTextCompleted : ""}
-                        variant="body1"
-                      >
-                        {text}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-
-                  <TableCell>
-                    <Box flexGrow={1}>
-                      <Typography>{due_date}</Typography>
-                    </Box>
-                  </TableCell>
-
-                  <TableCell>
-                    <Button
-                      // className={classes.deleteTodo}
-                      startIcon={<Icon>delete</Icon>}
-                      onClick={() => deleteTodo(id)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </Box>
-    </TableContainer>
-  );
-}
+};
 
 export default Todolist;

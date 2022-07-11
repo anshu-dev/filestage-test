@@ -1,12 +1,12 @@
-const url = "http://localhost:3001";
+const BASE_URL = "http://localhost:3001";
 
 export const fetchGetTodos = (query) => {
-  return fetch(`${url}${query ? query : ""}`);
+  return fetch(`${BASE_URL}${query ? query : ""}`);
 };
 
 export const fetchAddTodo = (text, dueDate) => {
   const today_date = formatDate();
-  return fetch(`${url}/`, {
+  return fetch(`${BASE_URL}/`, {
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     method: "POST",
     body: JSON.stringify({ text, dueDate, today_date }),
@@ -14,7 +14,7 @@ export const fetchAddTodo = (text, dueDate) => {
 };
 
 export const fetchToggleTodoCompleted = (id, todos) => {
-  return fetch(`${url}/${id}`, {
+  return fetch(`${BASE_URL}/${id}`, {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -27,7 +27,7 @@ export const fetchToggleTodoCompleted = (id, todos) => {
 };
 
 export const fetchDeleteTodo = (id) => {
-  return fetch(`${url}/${id}`, {
+  return fetch(`${BASE_URL}/${id}`, {
     method: "DELETE",
   });
 };

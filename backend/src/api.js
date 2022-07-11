@@ -1,9 +1,9 @@
-const express = require('express');
+const express = require("express");
 const controller = require("./controllers.js");
 const app = express();
 
 function requestLogger(req, res, next) {
-  res.once('finish', () => {
+  res.once("finish", () => {
     const log = [req.method, req.path];
     if (req.body && Object.keys(req.body).length > 0) {
       log.push(JSON.stringify(req.body));
@@ -11,9 +11,9 @@ function requestLogger(req, res, next) {
     if (req.query && Object.keys(req.query).length > 0) {
       log.push(JSON.stringify(req.query));
     }
-    log.push('->', res.statusCode);
+    log.push("->", res.statusCode);
     // eslint-disable-next-line no-console
-    console.log(log.join(' '));
+    console.log(log.join(" "));
   });
   next();
 }
