@@ -19,35 +19,39 @@ function Todos() {
     if (show) query = `?today_date=${formatDate()}`;
     fetchGetTodos(query)
       .then((response) => response.json())
-      .then((todos) => setTodos(todos));
+      .then((todos) => {
+        setscrollLoder(false);
+        setTodos(todos);
+      });
   }, [setTodos, show]);
 
   const fetchNextTodos = () => {
     setscrollLoder(true);
-    let temp = skip;
-    temp = 20 + temp;
+    let temp = 20 + skip;
     setSkip(temp);
     const query = `?skip=${temp}`;
     fetchGetTodos(query)
       .then((response) => response.json())
-      .then((nextTodos) => setTodos([...todos, ...nextTodos]));
+      .then((nextTodos) => {
+        setscrollLoder(false);
+        setTodos([...todos, ...nextTodos]);
+      });
   };
 
   return (
     <InfinitScroll
+      id="infinitscroll"
       dataLength={todos?.length}
       next={fetchNextTodos}
       hasMore={true}
       style={{ textAlign: "center" }}
       loader={scrollLoder && <div>Loading ... </div>}
     >
-      <Container maxWidth="md">
+      <Container maxWidth="md" id="container">
         <Typography variant="h3" align="center" component="h1" gutterBottom>
           Todos
         </Typography>
-
-        <AddTodo todos={todos} setTodos={setTodos} />
-
+        <AddTodo todos={todos} setTodos={setTodos} id="addtodo" />
         <Typography variant="h3" align="right" component="h1" gutterBottom>
           <Button
             type="button"

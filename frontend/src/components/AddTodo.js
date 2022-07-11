@@ -38,15 +38,16 @@ function AddTodo({ todos, setTodos }) {
             onChange={(event) => setNewTodoText(event.target.value)}
           />
         </Box>
-        <TextField
-          label="DueDate"
-          required
-          className={classes.inputDate}
-          type="date"
-          inputProps={{ min: formatDate() }}
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-        />
+        <Box className={classes.inputDate}>
+          <TextField
+            label="DueDate"
+            required
+            type="date"
+            // inputProps={{ min: formatDate() }}
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+        </Box>
         <Button
           type="submit"
           className={classes.addTodoButton}

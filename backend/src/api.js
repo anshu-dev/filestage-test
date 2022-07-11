@@ -20,12 +20,11 @@ function requestLogger(req, res, next) {
 
 app.use(requestLogger);
 app.use(require('cors')());
-app.use
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/', controller.getTodos);
-app.post('/',controller.addTodo);
+app.post('/', controller.addTodo);
 app.put('/:id', controller.updateTodo);
 app.delete('/:id', controller.deleteTodo);
 

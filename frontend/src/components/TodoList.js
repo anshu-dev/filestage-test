@@ -64,6 +64,8 @@ function Todolist({ show, todos, setTodos }) {
             <Typography variant="h5" align="left" component="div" gutterBottom>
               {show ? "All Todos" : "Filtered By Due Today"}
             </Typography>
+          </TableHead>
+          <TableHead className={classes.root}>
             <TableRow>
               <TableCell>Completed</TableCell>
               <TableCell>Text</TableCell>
@@ -76,7 +78,7 @@ function Todolist({ show, todos, setTodos }) {
               .reverse()
               .map(({ id, text, completed, due_date }, index) => (
                 <TableRow
-                  key={id}
+                  key={index}
                   className={classes.todoContainer}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                   onDragStart={(e) => dragStart(e, index)}
@@ -110,7 +112,7 @@ function Todolist({ show, todos, setTodos }) {
 
                   <TableCell>
                     <Button
-                      className={classes.deleteTodo}
+                      // className={classes.deleteTodo}
                       startIcon={<Icon>delete</Icon>}
                       onClick={() => deleteTodo(id)}
                     >

@@ -5,10 +5,11 @@ export const fetchGetTodos = (query) => {
 };
 
 export const fetchAddTodo = (text, dueDate) => {
+  const today_date = formatDate();
   return fetch(`${url}/`, {
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     method: "POST",
-    body: JSON.stringify({ text, dueDate }),
+    body: JSON.stringify({ text, dueDate, today_date }),
   });
 };
 
