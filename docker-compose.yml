@@ -10,6 +10,8 @@ services:
       - ./frontend/src:/frontend/src:cached,ro
     ports:
       - "3000:3000"
+    networks:
+      - filestage-app
 
   api:
     build: backend
@@ -21,14 +23,17 @@ services:
       - ./backend/src:/backend/src:cached,ro
     ports:
       - "3001:3001"
-    environment:
-      DATABASE_USER: "root"
-      DATABASE_PASSWORD: "1234"
+    networks:
+      - filestage-app
+    depends_on:
+      - database
 
   database:
     image: mongo:4.4
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: "root"
-      MONGO_INITDB_ROOT_PASSWORD: "1234"
+    networks:
+      - filestage-app
+networks:
+  filestage-app:
+    driver: bridge

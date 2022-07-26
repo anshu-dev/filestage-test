@@ -11,30 +11,24 @@ const AddTodo = ({ todos, setTodos }) => {
   const [newTodoText, setNewTodoText] = useState("");
   const [dueDate, setDueDate] = useState(todaysDate);
 
-  function addTodo(e) {
+  const addTodo = async (e) => {
     e.preventDefault();
-    const todoText = newTodoText.trim();
-    if (todoText !== "") {
-      fetchAddTodo(todoText, dueDate)
-        .then((response) => {
-          if (response.ok) {
-            return response.json();
-          }
-          throw new Error("something went wrong");
-        })
-        .then((todo) => {
-          setTodos([todo, ...todos]);
-          toast.success("added successfully");
-        })
-        .catch((error) => {
-          toast.error(error.message);
-        });
-      setNewTodoText("");
-      setDueDate(todaysDate);
-    } else {
-      alert("canot be empty");
+    try {
+      const todoText = newTodoText.trim();
+      if (todoText !== "") {
+        const res = await fetchAddTodo(todoText, dueDate);
+        const todo = await res.json();
+        setTodos([todo, ...todos]);
+        toast.success("added successfully");
+        setNewTodoText("");
+        setDueDate(todaysDate);
+      } else {
+        alert("todo can not be empty!");
+      }
+    } catch (e) {
+      toast.error("error");
     }
-  }
+  };
 
   return (
     <Paper className={classes.addTodoContainer}>
@@ -51,6 +45,7 @@ const AddTodo = ({ todos, setTodos }) => {
             fullWidth
             value={newTodoText}
             onChange={(event) => setNewTodoText(event.target.value)}
+            inputProps={{ "data-testid": "input-text" }}
           />
         </Box>
         <Box className={classes.inputDate}>
@@ -58,7 +53,7 @@ const AddTodo = ({ todos, setTodos }) => {
             label="DueDate"
             required
             type="date"
-            inputProps={{ min: todaysDate }}
+            inputProps={{ min: todaysDate, "data-testid": "due-date" }}
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />

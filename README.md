@@ -47,4 +47,25 @@ would result in the list: 1, 3 and 2.
 3. I have handled the exceptions on api calls and handled in the logger as well.
 # Bug:
 1. Completed field is not updating in the backend although the api is working fine.
-(Their is change in backend where we are updating todos their was wrong collection name is used we have fixed with right one)
+`Their is change in backend where we are updating todos their was wrong collection name is used we have fixed with right one`
+
+# Fixed Docker compose issue
+1. we have created the bridge by adding -
+    `networks:
+      filestage-app:
+        driver: bridge`
+  this in `service`.
+
+2. we have added this
+      networks:
+            - filestage-app
+ in our `api` and `frontend`
+
+3. we have added this
+      networks:
+            - filestage-app
+ in our `api` and `frontend`
+
+4. Auditing package dependencies for security vulnerabilities
+  `npm audit`
+  `npm audit fix`

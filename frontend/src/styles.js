@@ -16,12 +16,6 @@ export const useStyles = makeStyles({
       margin: 0,
       borderTop: "none",
     },
-    "&:hover": {
-      color: "Skyblue",
-      "& $deleteTodo": {
-        visibility: "visible",
-      },
-    },
   },
   root: {
     "& .MuiTableCell-head": {

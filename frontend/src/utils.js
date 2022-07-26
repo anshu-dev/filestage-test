@@ -13,6 +13,15 @@ export const fetchAddTodo = (text, dueDate) => {
   });
 };
 
+export const reOrderTodo = (data) => {
+  const today_date = formatDate();
+  return fetch(`${BASE_URL}/reorder`, {
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};
+
 export const fetchToggleTodoCompleted = (id, todos) => {
   return fetch(`${BASE_URL}/${id}`, {
     headers: {

@@ -27,5 +27,6 @@ app.get('/', controller.getTodos);
 app.post('/', controller.addTodo);
 app.put('/:id', controller.updateTodo);
 app.delete('/:id', controller.deleteTodo);
+app.post('/reorder', controller.reOrderTodo);
 
 module.exports = app;

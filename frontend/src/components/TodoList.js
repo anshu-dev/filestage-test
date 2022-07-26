@@ -17,43 +17,62 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import toast from "react-hot-toast";
 
 import { useStyles } from "../styles";
-import { fetchDeleteTodo, fetchToggleTodoCompleted } from "../utils";
+import {
+  fetchDeleteTodo,
+  fetchGetTodos,
+  fetchToggleTodoCompleted,
+  reOrderTodo,
+} from "../utils";
 import Loader from "./Loader";
 
 const Todolist = ({ show, todos, setTodos, loading }) => {
   const classes = useStyles();
 
-  function toggleTodoCompleted(id) {
-    fetchToggleTodoCompleted(id, todos)
-      .then(() => {
-        const newTodos = [...todos];
-        const modifiedTodoIndex = newTodos.findIndex((todo) => todo.id === id);
-        newTodos[modifiedTodoIndex] = {
-          ...newTodos[modifiedTodoIndex],
-          completed: !newTodos[modifiedTodoIndex].completed,
-        };
-        setTodos(newTodos);
-        toast.success("updated");
-      })
-      .catch((error) => toast(error));
-  }
-
-  function deleteTodo(id) {
-    fetchDeleteTodo(id)
-      .then(() => {
-        setTodos(todos.filter((todo) => todo.id !== id));
-        toast.success("deleted successfully");
-      })
-      .catch((error) => toast.error(error));
-  }
-
-  const handleEnd = (result) => {
-    if (!result.destination) return;
-    const newTodos = [...todos];
-    const [reorderedItem] = newTodos.splice(result.source.index, 1);
-    newTodos.splice(result.destination.index, 0, reorderedItem);
-    setTodos(newTodos);
+  const toggleTodoCompleted = async (id) => {
+    try {
+      await fetchToggleTodoCompleted(id, todos);
+      const newTodos = [...todos];
+      const modifiedTodoIndex = newTodos.findIndex((todo) => todo.id === id);
+      newTodos[modifiedTodoIndex] = {
+        ...newTodos[modifiedTodoIndex],
+        completed: !newTodos[modifiedTodoIndex].completed,
+      };
+      setTodos(newTodos);
+      toast.success("updated");
+    } catch (e) {
+      toast("error");
+    }
   };
+
+  const deleteTodo = async (id) => {
+    try {
+      await fetchDeleteTodo(id);
+      setTodos(todos.filter((todo) => todo.id !== id));
+      toast.success("deleted successfully");
+    } catch (e) {
+      toast.error(e);
+    }
+  };
+
+  const handleEnd = async (result) => {
+    if (!result?.destination) return;
+    const res = await reOrderTodo({
+      si: result.source.index,
+      di: result.destination.index,
+      sid: result.draggableId,
+    });
+    if (res) {
+      let query;
+      const res1 = await fetchGetTodos(query);
+      const todolist = await res1.json();
+      setTodos(todolist);
+    }
+    // const newTodos = [...todos];
+    // const [reorderedItem] = newTodos.splice(result.source.index, 1);
+    // newTodos.splice(result.destination.index, 0, reorderedItem);
+    // setTodos(newTodos);
+  };
+
   if (loading) {
     return <Loader />;
   } else {
@@ -83,7 +102,7 @@ const Todolist = ({ show, todos, setTodos, loading }) => {
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                   >
-                    {todos.map(({ id, text, completed, due_date }, index) => (
+                    {todos?.map(({ id, text, completed, due_date, index }) => (
                       <Draggable
                         key={id}
                         draggableId={id?.toString()}
@@ -104,6 +123,7 @@ const Todolist = ({ show, todos, setTodos, loading }) => {
                               <Checkbox
                                 checked={completed}
                                 onClick={() => toggleTodoCompleted(id)}
+                                data-testid="checkbox"
                               ></Checkbox>
                             </TableCell>
 
@@ -131,6 +151,7 @@ const Todolist = ({ show, todos, setTodos, loading }) => {
                                 className={classes.deleteTodo}
                                 startIcon={<Icon>delete</Icon>}
                                 onClick={() => deleteTodo(id)}
+                                data-testid="deleteButton"
                               >
                                 Delete
                               </Button>

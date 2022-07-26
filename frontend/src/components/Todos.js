@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Container, Icon, Switch, Typography } from "@mui/material";
+import { Container, Switch, Typography } from "@mui/material";
 import toast from "react-hot-toast";
 
 import { fetchGetTodos, formatDate } from "../utils";
@@ -15,28 +15,22 @@ const Todos = () => {
   const [scrollLoder, setscrollLoder] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  useEffect(async () => {
     setLoading(true);
     let query;
     if (show) query = `?today_date=${formatDate()}`;
-    fetchGetTodos(query)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("something went wrong");
-      })
-      .then((todos) => {
-        setscrollLoder(false);
-        setTodos(todos);
-        toast.success("success");
-        setLoading(false);
-      })
-      .catch((error) => {
-        toast.error(error);
-        setLoading(false);
-      });
-  }, [setTodos, show]);
+    try {
+      const res = await fetchGetTodos(query);
+      const todos = await res.json();
+      setscrollLoder(false);
+      setTodos(todos);
+      toast.success("success");
+      setLoading(false);
+    } catch (e) {
+      toast.error("error");
+      setLoading(false);
+    }
+  }, [show]);
 
   const fetchNextTodos = () => {
     setscrollLoder(true);
@@ -50,7 +44,6 @@ const Todos = () => {
         setTodos([...todos, ...nextTodos]);
       });
   };
-
   return (
     <InfinitScroll
       id="infinitscroll"
@@ -79,7 +72,7 @@ const Todos = () => {
           <label>Due Today</label>
         </Typography>
 
-        {todos.length > 0 && (
+        {todos?.length > 0 && (
           <TodoList
             show={show}
             todos={todos}

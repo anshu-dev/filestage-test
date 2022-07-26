@@ -8,9 +8,9 @@ exports.getTodos = async (req, res) => {
     const todos = database.client.db("todos").collection("todos");
     let filter = {};
     if (today_date) filter = { ...filter, due_date: today_date };
-    const response = await todos.find(filter, { limit: 20, skip: skip ? +skip : 0 }).toArray();
+    const response = await todos.find(filter, { limit: 20, skip: skip ? +skip : 0 }).sort({ index: 1 }).toArray()
     res.status(200);
-    res.json(response.reverse());
+    res.json(response);
   } catch (error) {
     logger.error("while feching todos");
     res.status(500).send(error);
@@ -31,11 +31,15 @@ exports.addTodo = async (req, res) => {
       res.error({ message: "invalid 'date'" });
       return;
     }
+
+    const todos = await database.client.db("todos").collection("todos").find().sort({ index: -1 }).limit(1).toArray()
+
     const todo = {
       id: generateId(),
       text,
       completed: false,
       due_date: dueDate,
+      index: (todos.length === 0 ? 0 : todos[0].index + 1)
     };
 
     const response = await database.client.db("todos").collection("todos").insertOne(todo);
@@ -80,6 +84,41 @@ exports.updateTodo = async (req, res) => {
     logger.info("todo has been updated", response);
     res.status(200);
     res.end();
+  } catch (error) {
+    logger.error("error while updating todo", error);
+    res.status(500).send(error);
+  }
+};
+
+exports.reOrderTodo = async (req, res) => {
+  const { si, di, sid } = req.body
+  try {
+
+    let condition = [{ index: { $gt: si } }, { index: { $lte: di } }]
+    let incby = -1
+
+    if (si === di) {
+      return;
+    }
+    else if (si > di) {
+      condition = [{ index: { $lt: si } }, { index: { $gte: di } }]
+      incby = 1
+    }
+
+    var upmany = await database.client
+      .db("todos")
+      .collection("todos").updateMany(
+        { $and: condition },
+        { $inc: { "index": incby } }
+      );
+
+    if (upmany) {
+      await database.client.db("todos").collection("todos").updateOne({ id: sid }, { $set: { "index": di } });
+    }
+
+    logger.info("todo reordered", upmany);
+    res.status(200);
+    res.send(upmany);
   } catch (error) {
     logger.error("error while updating todo", error);
     res.status(500).send(error);
